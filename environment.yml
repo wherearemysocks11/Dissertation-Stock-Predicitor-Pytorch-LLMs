@@ -1,0 +1,20 @@
+name: stock-predictor
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.11
+  - pip
+  - pandas>=2.0.0
+  - requests>=2.32.5
+  - python-dotenv==1.2.1
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=12.1  # matches recent NVIDIA drivers
+  - pip:
+      - newsapi-python==0.2.7
+      - yfinance>=0.2.0
