@@ -21,18 +21,20 @@ class InterestRateFetcher:
         self.timeout = timeout
         self.base_url = "https://api.worldbank.org/v2/country"
     
-    def fetch(self, country_codes, startDate='1970-01-01'):
+    def fetch(self, country_codes=['USA', 'GBR', 'DEU', 'JPN', 'CHN'], startDate='1970-01-01'):
         """
         Fetch interest rate data for multiple countries from the World Bank API.
         
         Args:
-            country_codes (list): List of ISO 3-letter country codes.
-                                 Examples: ['USA', 'GBR', 'DEU', 'JPN', 'CHN']
+            country_codes (list): List of ISO 3-letter country codes (default: ['USA', 'GBR', 'DEU', 'JPN', 'CHN']).
+                                 Examples: ['USA', 'GBR', 'EUR', 'IND']
             startDate (str): Starting date for data in 'YYYY-MM-DD' format (default: '1970-01-01').
         
         Returns:
-            pandas.DataFrame: Combined interest rate data with columns:
-                             'year', 'value', 'country', 'indicator', 'country_code'
+            dict: Dictionary where keys are country codes and values are pandas DataFrames.
+                  Each DataFrame contains interest rate data for that country with columns:
+                  'year', 'value', 'country', 'indicator', 'country_code'
+                  Returns an empty dictionary if no data is retrieved.
         
         Raises:
             ValueError: If country_codes is not a list, is empty, or date format is invalid
@@ -48,8 +50,8 @@ class InterestRateFetcher:
             # Get the current year for the end of the range
             end_year = datetime.now().year
 
-            # List to store DataFrames for each country
-            all_data = []
+            # Dictionary to store DataFrames for each country
+            country_data = {}
 
             # Loop through each country code in the provided list
             for country_code in country_codes:
@@ -87,11 +89,11 @@ class InterestRateFetcher:
                                 'country_code': country_code            # ISO country code
                             })
 
-                    # If we have valid records, create a DataFrame and add to collection
+                    # If we have valid records, create a DataFrame and add to dictionary
                     if records:
                         df = pd.DataFrame(records)
                         df = df.sort_values('year').reset_index(drop=True)  # Sort by year
-                        all_data.append(df)
+                        country_data[country_code] = df
                         
                 except requests.exceptions.Timeout:
                     print(f"Warning: Request timeout for country code: {country_code}")
@@ -103,14 +105,13 @@ class InterestRateFetcher:
                     print(f"Warning: Unexpected error for {country_code}: {str(e)}")
                     continue
 
-            # Combine all country DataFrames into a single DataFrame
-            if all_data:
-                combined_df = pd.concat(all_data, ignore_index=True)
-                return combined_df
+            # Return dictionary of DataFrames (one per country)
+            if country_data:
+                return country_data
             else:
-                # Return empty DataFrame with proper column structure if no data found
+                # Return empty dictionary if no data found
                 print("Warning: No data retrieved for any country")
-                return pd.DataFrame(columns=['year', 'value', 'country', 'indicator', 'country_code'])
+                return {}
         
         except ValueError as e:
             # Re-raise validation errors

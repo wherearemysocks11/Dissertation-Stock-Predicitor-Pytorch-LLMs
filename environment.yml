@@ -1,0 +1,24 @@
+name: stock-predictor
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Python version
+  - python>=3.10
+
+  # Environment and configuration
+  - python-dotenv>=1.0.0
+
+  # HTTP requests
+  - requests>=2.32.0
+
+  # Data processing
+  - pandas>=2.0.0
+
+  # Stock data fetching
+  - yfinance>=0.2.0
+
+  # Pip-only packages (not available in conda)
+  - pip
+  - pip:
+    - newsapi-python>=0.2.7

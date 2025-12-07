@@ -13,39 +13,37 @@ class StockFetcher:
         self.valid_intervals = ['1m', '2m', '5m', '15m', '30m', '60m', '90m', 
                                '1h', '1d', '5d', '1wk', '1mo', '3mo']
     
-    def fetch(self, tickers, startDate='1970-01-01', interval='1d'):
+    def fetch(self, ticker, startDate='1970-01-01', interval='1d'):
         """
-        Fetch historical stock data for the given ticker symbol(s).
+        Fetch historical stock data for the given ticker symbol.
         
         Args:
-            tickers (list): List of stock ticker symbols (e.g., ['NVDA', 'TSLA']).
-            startDate (str): Starting date for historical data in 'YYYY-MM-DD' format (default: '1970-01-01').
+            ticker (str): Stock ticker symbol (e.g., 'NVDA', 'TSLA').
+            startDate (str): Starting date for historical data in 'YYYY-MM-DD' format (default: '1970-01-01', api handles the rest if the data starts later).
             interval (str): Time interval between data points (default: '1d').
                            Options: '1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', 
                                     '1d', '5d', '1wk', '1mo', '3mo'.
                            Note: Minute intervals ('1m'-'90m') are only available for the last 7-60 days.
         
         Returns:
-            pandas.DataFrame: Historical stock data with columns like Open, High, Low, Close, Volume, etc.
-                             If multiple tickers provided, columns will be MultiIndex with (metric, ticker).
+            pandas.DataFrame: Historical stock data with columns: Open, High, Low, Close, Volume, etc.
         
         Raises:
-            ValueError: If tickers is not a list, is empty, or if date format is invalid
+            ValueError: If ticker is not a string, is empty, or if date format is invalid
             Exception: If data download fails
         """
         # Validate input
-        self._validate_tickers(tickers)
+        self._validate_ticker(ticker)
         self._validate_date(startDate)
         self._validate_interval(interval)
         
         try:
-            # Download historical stock data for one or more tickers using yfinance
-            # Returns a DataFrame with price/volume columns, and MultiIndex columns if multiple tickers
-            stock_data = yf.download(tickers, start=startDate, interval=interval)
+            # Download historical stock data using yfinance
+            stock_data = yf.download(ticker, start=startDate, interval=interval)
             
             # Check if data was successfully downloaded
             if stock_data.empty:
-                raise Exception(f"No data returned for tickers: {tickers}. Check if ticker symbols are valid.")
+                raise Exception(f"No data returned for ticker: {ticker}. Check if ticker symbol is valid.")
 
             # Return the DataFrame for further analysis or modeling
             return stock_data
@@ -54,12 +52,12 @@ class StockFetcher:
             # Catch download errors or network issues
             raise Exception(f"Error fetching stock data: {str(e)}")
     
-    def _validate_tickers(self, tickers):
-        """Validate tickers parameter."""
-        if not isinstance(tickers, list):
-            raise ValueError("tickers must be a list of ticker symbols")
-        if len(tickers) == 0:
-            raise ValueError("tickers list cannot be empty")
+    def _validate_ticker(self, ticker):
+        """Validate ticker parameter."""
+        if not isinstance(ticker, str):
+            raise ValueError("ticker must be a string")
+        if len(ticker) == 0:
+            raise ValueError("ticker cannot be empty")
     
     def _validate_date(self, startDate):
         """Validate date format."""
